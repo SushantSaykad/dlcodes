@@ -1,0 +1,6 @@
+1    ls
+2    gedit filename
+3    ls
+4    g++ -o (filename~sushant) filename.cpp
+5    ls
+6    ./filename
