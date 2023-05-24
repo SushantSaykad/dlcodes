@@ -1,0 +1,95 @@
+#include <iostream>
+#include <queue>
+#include <unordered_map>
+
+using namespace std;
+
+// Huffman tree node
+struct Node {
+    char data;
+    unsigned frequency;
+    Node* left;
+    Node* right;
+
+    Node(char data, unsigned frequency) : data(data), frequency(frequency), left(nullptr), right(nullptr) {}
+};
+
+// Comparison function for priority queue
+struct Compare {
+    bool operator()(Node* left, Node* right) {
+        return left->frequency > right->frequency;
+    }
+};
+
+// Function to traverse the Huffman tree and generate codes
+void generateCodes(Node* root, string code, unordered_map<char, string>& codes) {
+    if (root == nullptr)
+        return;
+
+    // If the node is a leaf, store its code in the map
+    if (!root->left && !root->right)
+        codes[root->data] = code;
+
+    // Traverse left and append '0' to the code
+    generateCodes(root->left, code + "0", codes);
+
+    // Traverse right and append '1' to the code
+    generateCodes(root->right, code + "1", codes);
+}
+
+// Function to build the Huffman tree and generate codes
+unordered_map<char, string> huffmanEncoding(const string& text) {
+    // Calculate the frequency of each character in the text
+    unordered_map<char, unsigned> freq;
+    for (char c : text)
+        freq[c]++;
+
+    // Priority queue to store the Huffman tree nodes
+    priority_queue<Node*, vector<Node*>, Compare> pq;
+
+    // Create a leaf node for each character and add it to the priority queue
+    for (auto& pair : freq)
+        pq.push(new Node(pair.first, pair.second));
+
+    // Build the Huffman tree by merging the lowest frequency nodes
+    while (pq.size() > 1) {
+        Node* left = pq.top();
+        pq.pop();
+        Node* right = pq.top();
+        pq.pop();
+
+        // Create a new internal node with the sum of frequencies
+        Node* newNode = new Node('$', left->frequency + right->frequency);
+        newNode->left = left;
+        newNode->right = right;
+
+        // Add the new node back to the priority queue
+        pq.push(newNode);
+    }
+
+    // Root of the Huffman tree
+    Node* root = pq.top();
+
+    // Generate Huffman codes for each character
+    unordered_map<char, string> codes;
+    generateCodes(root, "", codes);
+
+    // Cleanup
+    delete root;
+
+    return codes;
+}
+
+int main() {
+    string text = "Hello, Huffman Encoding!";
+
+    // Perform Huffman encoding
+    unordered_map<char, string> codes = huffmanEncoding(text);
+
+    // Print the Huffman codes
+    cout << "Huffman Codes:\n";
+    for (auto& pair : codes)
+        cout << pair.first << " : " << pair.second << '\n';
+
+    return 0;
+}
